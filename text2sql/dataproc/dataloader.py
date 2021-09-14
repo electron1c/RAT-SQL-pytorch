@@ -119,14 +119,6 @@ class DataLoader(object):
         self._use_data_parallel = use_data_parallel
         self._use_multiprocess = use_multiprocess
 
-        # self.dataloader = torch.utils.data.DataLoader.from_generator(
-        #     capacity=1000, return_list=True, use_multiprocess=use_multiprocess)
-        self.dataloader = torch.utils.data.DataLoader.from_generator(
-            capacity=1000, return_list=True, use_multiprocess=use_multiprocess)
-        self.dataloader.set_batch_generator(self.create_generator())
-        # if use_data_parallel:
-        #     self.dataloader = paddle.distributed_batch_reader(self.dataloader)
-
     def __call__(self):
         """call"""
         return self.create_generator()()
