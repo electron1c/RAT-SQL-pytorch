@@ -65,9 +65,9 @@ def preprocess(config):
 
 def train(config):
     logging.info('training arguments: %s', config)
-    if config.train.use_data_parallel:
-        logging.info("parallel mode. init env...")
-        dist.init_parallel_env()
+    # if config.train.use_data_parallel:
+    #     logging.info("parallel mode. init env...")
+    #     dist.init_parallel_env()
 
     dataset_config = {
         'db_file': config.data.db,
