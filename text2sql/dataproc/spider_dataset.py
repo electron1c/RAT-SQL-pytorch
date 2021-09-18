@@ -113,8 +113,7 @@ def load_tables(schema_file, content_file):
             if 'table_names_original' not in schema_dict:
                 schema_dict['table_names_original'] = schema_dict['table_names']
             if 'column_names_original' not in schema_dict:
-                schema_dict['column_names_original'] = schema_dict[
-                    'column_names']
+                schema_dict['column_names_original'] = schema_dict['column_names']
             tables = tuple(
                 Table(
                     id=i, name=text_utils.wordseg(name), orig_name=orig_name)
