@@ -49,7 +49,7 @@ def lstm_init(num_layers, hidden_size, *batch_sizes):
     init_size = batch_sizes + (hidden_size, )
     if num_layers is not None:
         init_size = (num_layers, ) + init_size
-    init = paddle.zeros(init_size)
+    init = torch.zeros(init_size)
     return (init, init)
 
 

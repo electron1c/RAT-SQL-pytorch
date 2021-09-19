@@ -22,11 +22,9 @@ from functools import partial
 import random
 
 import numpy as np
+import torch
 
-import text2sql
-from text2sql import global_config
-from text2sql import dataproc
-# from text2sql import launch
+from text2sql import models, dataproc, global_config, optim, launch
 from text2sql.grammars.spider import SpiderLanguage
 
 ModelClass = None
@@ -95,17 +93,12 @@ def train(config):
     if config.model.init_model_params is not None:
         logging.info("loading model param from %s",
                      config.model.init_model_params)
-        model.set_state_dict(paddle.load(config.model.init_model_params))
-    if config.train.use_data_parallel:
-        logging.info("parallel mode. init model...")
-        model = paddle.DataParallel(model)
+        model.load_state_dict(torch.load(config.model.init_model_params))
 
-    optimizer = text2sql.optim.init_optimizer(model, config.train,
-                                              max_train_steps)
+    optimizer = optim.init_optimizer(model, config.train, max_train_steps)
     if config.model.init_model_optim is not None:
-        logging.info("loading model optim from %s",
-                     config.model.init_model_optim)
-        optimizer.set_state_dict(paddle.load(config.model.init_model_optim))
+        logging.info("loading model optim from %s", config.model.init_model_optim)
+        optimizer.set_state_dict(torch.load(config.model.init_model_optim))
 
     logging.info("start of training...")
     launch.trainer.train(config, model, optimizer, config.train.epochs,
@@ -130,7 +123,7 @@ def inference(config):
 
     model = ModelClass(config.model, g_label_encoder)
     logging.info("loading model param from %s", config.model.init_model_params)
-    state_dict = paddle.load(config.model.init_model_params)
+    state_dict = torch.load(config.model.init_model_params)
     model.set_state_dict(state_dict)
 
     logging.info("start of inference...")
@@ -205,7 +198,7 @@ def init_env(config):
 
     assert config.model.model_name == 'seq2tree_v2', 'only seq2tree_v2 is supported'
     g_input_encoder = dataproc.BertInputEncoder(config.model)
-    ModelClass = lambda x1, x2: text2sql.models.EncDecModel(x1, x2, 'v2')
+    ModelClass = lambda x1, x2: models.EncDecModel(x1, x2, 'v2')
     DatasetClass = dataproc.SpiderDataset
     DataLoaderClass = partial(
         dataproc.DataLoader,
@@ -220,9 +213,9 @@ def _set_proc_name(config, tag_base):
         return
     if tag_base.startswith('train'):
         tag_base = 'train'
-    import setproctitle
-    setproctitle.setproctitle(tag_base + '_' + config.data.output.rstrip('/')
-                              .split('/')[-1])
+    # import setproctitle
+    # setproctitle.setproctitle(tag_base + '_' + config.data.output.rstrip('/')
+    #                           .split('/')[-1])
 
 
 if __name__ == "__main__":
@@ -240,7 +233,4 @@ if __name__ == "__main__":
     elif run_mode == 'infer':
         inference(config)
     elif run_mode.startswith('train'):
-        if config.train.use_data_parallel:
-            dist.spawn(train, args=(config, ))
-        else:
-            train(config)
+        train(config)
