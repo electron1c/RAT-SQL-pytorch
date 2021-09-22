@@ -35,6 +35,8 @@ def relative_attention_logits(query, key, relation):
 
     # qk_matmul is [batch, heads, num queries, num kvs]
     qk_matmul = torch.matmul(query, key.transpose(-2, -1))
+    if relation is None:
+        return qk_matmul / math.sqrt(query.shape[-1])
 
     # q_t is [batch, num queries, heads, depth]
     q_t = query.permute(0, 2, 1, 3)

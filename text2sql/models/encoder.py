@@ -78,7 +78,8 @@ class Text2SQLEncoder(nn.Module):
         if model_config.init_model_params is None:
             self.base_encoder = PretrainModel.from_pretrained(model_config.pretrain_model)
         else:
-            self.base_encoder = PretrainModel(**args['cfg'])
+            # self.base_encoder = PretrainModel(**args['cfg'])
+            self.base_encoder = PretrainModel
         self.rel_has_value = True
         self.encs_update = relational_encoder.RelationAwareEncoder(
             num_layers=model_config.rat_layers,
@@ -95,11 +96,9 @@ class Text2SQLEncoder(nn.Module):
     def forward(self, inputs):
         """modeling forward stage of encoder
         """
-        seq_hidden, cls_hidden = self.base_encoder(inputs['src_ids'],
-                                                   inputs['sent_ids'])
-        if self.pretrain_model_type != 'ERNIE' and self.pretrain_model_type != 'BERT':
-            cls_hidden, seq_hidden = seq_hidden, cls_hidden
-
+        encoder_output = self.base_encoder(inputs['src_ids'], inputs['sent_ids'])
+        seq_hidden = encoder_output.last_hidden_state
+        cls_hidden = encoder_output.pooler_output
         question_tokens_index = inputs["question_tokens_index"]
         table_indexes = inputs["table_indexes"]
         column_indexes = inputs["column_indexes"]
@@ -112,8 +111,7 @@ class Text2SQLEncoder(nn.Module):
         value_encs = nn_utils.batch_gather_2d(seq_hidden, value_indexes)
         if self.enc_value_with_col:
             value_num = value_encs.shape[1] // 2
-            value_encs = value_encs.reshape(
-                [value_encs.shape[0], value_num, 2, -1]).sum(axis=2)
+            value_encs = value_encs.reshape([value_encs.shape[0], value_num, 2, -1]).sum(dim=2)
 
         orig_inputs = inputs['orig_inputs']
         column_pointer_maps = [{
@@ -160,7 +158,7 @@ class Text2SQLEncoder(nn.Module):
                 memory.append(c_enc_new)
             if 'value' in self.include_in_memory and self.rel_has_value:
                 memory.append(v_enc_new)
-            memory = torch.concat(memory, dim=1)
+            memory = torch.cat(memory, dim=1)
             if not self.rel_has_value:
                 v_enc_new = val_enc.unsqueeze(0)
                 m2v_align_mat = self.value_align(

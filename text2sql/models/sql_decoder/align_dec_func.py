@@ -49,16 +49,16 @@ def compute_align_loss(model, desc_enc, example):
     rel_tabs_t = torch.tensor(sorted(list(set(rel_tabs))), dtype=torch.int64)
     rel_vals_t = torch.tensor(sorted(list(set(rel_vals))), dtype=torch.int64)
 
-    mc_att_on_rel_col = desc_enc.m2c_align_mat.index_select(rel_cols_t, axis=1)
-    mc_max_rel_att = mc_att_on_rel_col.max(axis=0)
-    mc_max_rel_att = mc_max_rel_att.clip(min=1e-9)
+    mc_att_on_rel_col = desc_enc.m2c_align_mat.index_select(1, rel_cols_t)
+    mc_max_rel_att = mc_att_on_rel_col.max(axis=0).values
+    mc_max_rel_att = mc_max_rel_att.clamp(min=1e-9)
 
-    mt_att_on_rel_tab = desc_enc.m2t_align_mat.index_select(rel_tabs_t, axis=1)
-    mt_max_rel_att = mt_att_on_rel_tab.max(axis=0)
-    mt_max_rel_att = mt_max_rel_att.clip(min=1e-9)
+    mt_att_on_rel_tab = desc_enc.m2t_align_mat.index_select(1, rel_tabs_t)
+    mt_max_rel_att = mt_att_on_rel_tab.max(axis=0).values
+    mt_max_rel_att = mt_max_rel_att.clamp(min=1e-9)
 
-    mv_att_on_rel_val = desc_enc.m2v_align_mat.index_select(rel_vals_t, axis=1)
-    mv_max_rel_att = mv_att_on_rel_val.max(axis=0)
+    mv_att_on_rel_val = desc_enc.m2v_align_mat.index_select(1, rel_vals_t)
+    mv_max_rel_att = mv_att_on_rel_val.max(axis=0).values
     mv_max_rel_att = mv_max_rel_att.clip(min=1e-9)
 
     value_loss_weight = 2.0

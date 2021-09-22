@@ -507,7 +507,8 @@ class Text2SQLDecoder(torch.nn.Module):
             ),
             dim=-1)
         # state_input shape: batch (=1) x (emb_size * 5)
-        _, new_state = self.state_update(state_input, prev_state)
+        # _, new_state = self.state_update(state_input, prev_state)
+        new_state = self.state_update(state_input, prev_state)
         return new_state, attention_logits
 
     def apply_rule(self, node_type, prev_state, prev_action_emb, parent_h,

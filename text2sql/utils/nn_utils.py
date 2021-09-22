@@ -80,25 +80,19 @@ def batch_gather_2d(var, indices):
         raise ValueError('shape of indices error. it should be a 2-D layers. '
                          'but got shape = %s' % (str(indices.shape), ))
 
-    batch_size = paddle.shape(indices)[0]
-
-    zero = paddle.to_tensor([0], dtype='int64')
-    one = paddle.to_tensor([1], dtype='int64')
-    end = paddle.cast(batch_size, dtype='int64')
-    batch_indices_1d = paddle.unsqueeze(
-        paddle.arange(
-            zero, end, one, dtype=indices.dtype), [1])
+    batch_size = indices.shape[0]
+    batch_indices_1d = torch.unsqueeze(torch.arange(0, batch_size, dtype=indices.dtype), 1)
 
     seq_len = indices.shape[1]
-    batch_indices = paddle.expand(batch_indices_1d, [batch_size, seq_len])
+    batch_indices = batch_indices_1d.repeat([1, seq_len])
 
-    coord_2d = paddle.concat(
-        [paddle.unsqueeze(batch_indices, [2]), paddle.unsqueeze(indices, [2])],
-        axis=2)
-    coord_2d.stop_gradient = True
-    coord_1d = paddle.reshape(coord_2d, shape=[-1, 2])
-    output_1d = paddle.gather_nd(var, coord_1d)
-    output_2d = paddle.reshape(output_1d, [batch_size, seq_len, var.shape[-1]])
+    coord_2d = torch.cat(
+        [torch.unsqueeze(batch_indices, 2), torch.unsqueeze(indices, 2)],
+        dim=2).detach()
+
+    coord_1d = torch.reshape(coord_2d, shape=[-1, 2])
+    output_1d = var[coord_1d[..., 0], coord_1d[..., 1]]
+    output_2d = torch.reshape(output_1d, [batch_size, seq_len, var.shape[-1]])
     return output_2d
 
 

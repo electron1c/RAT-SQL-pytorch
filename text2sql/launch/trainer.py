@@ -50,11 +50,11 @@ def epoch_train(config, model, optimizer, epoch, train_data, is_debug=False):
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
-        if type(optimizer._learning_rate) is not float:
-            optimizer._learning_rate.step()
+        # if type(optimizer._learning_rate) is not float:
+        #     optimizer._learning_rate.step()
 
-        total_loss += loss.numpy().item()
-        steps_loss.append(loss.numpy().item())
+        total_loss += loss.item()
+        steps_loss.append(loss.item())
         if batch_id % config.train.log_steps == 0 or is_debug:
             log_train_step(epoch, batch_id, steps_loss, timer.interval())
     log_train_step(epoch, batch_id, steps_loss, timer.interval())
