@@ -95,13 +95,14 @@ def train(config):
                      config.model.init_model_params)
         model.load_state_dict(torch.load(config.model.init_model_params))
 
-    optimizer = optim.init_optimizer(model, config.train, max_train_steps)
+    lr_scheduler, optimizer = optim.init_optimizer(model, config.train, max_train_steps)
+
     if config.model.init_model_optim is not None:
         logging.info("loading model optim from %s", config.model.init_model_optim)
         optimizer.set_state_dict(torch.load(config.model.init_model_optim))
 
     logging.info("start of training...")
-    launch.trainer.train(config, model, optimizer, config.train.epochs,
+    launch.trainer.train(config, model, (lr_scheduler, optimizer), config.train.epochs,
                          train_reader, dev_reader)
     logging.info("end of training...")
 

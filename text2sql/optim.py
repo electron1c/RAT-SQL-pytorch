@@ -35,16 +35,27 @@ def init_optimizer(model, config, train_steps, scale_params_lr=None):
         for model, lr_scale in scale_params_lr:
             for param in model.parameters():
                 param.optimize_attr['learning_rate'] *= lr_scale
+    no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
+    optimizer_grouped_parameters = [
+        {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
+         'weight_decay': config.weight_decay},
+        {'params': [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)],
+         'weight_deacy': 0.}
+    ]
 
     warmup_steps = int(config.warmup_proportion * train_steps)
     # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
     #     config.learning_rate,
     #     get_warmup_and_linear_decay(train_steps, warmup_steps))
     optimizer = torch.optim.AdamW(
-        lr=1e-3,
-        params=model.parameters(),
-        weight_decay=config.weight_decay)
-    return optimizer
+        lr=config.learning_rate,
+        params=optimizer_grouped_parameters)
+
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(
+        optimizer,
+        lr_lambda=get_warmup_and_linear_decay(train_steps, warmup_steps)
+    )
+    return lr_scheduler, optimizer
 
 
 if __name__ == "__main__":

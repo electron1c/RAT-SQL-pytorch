@@ -39,17 +39,19 @@ def log_train_step(epoch, batch, steps_loss, cost_time):
 
 def epoch_train(config, model, optimizer, epoch, train_data, is_debug=False):
     model.train()
+    lr_scheduler, optimizer = optimizer
 
     total_loss = 0
     steps_loss = []
     timer = utils.Timer()
     batch_id = 1
     for batch_id, (inputs, labels) in enumerate(train_data(), start=1):
+        optimizer.zero_grad()
         loss = model(inputs, labels)
 
         loss.backward()
         optimizer.step()
-        optimizer.zero_grad()
+        lr_scheduler.step()
         # if type(optimizer._learning_rate) is not float:
         #     optimizer._learning_rate.step()
 
