@@ -190,8 +190,8 @@ class Text2SQLDecoder(torch.nn.Module):
             embedding_dim=self.node_emb_size)
 
         # TODO batching
-        self.zero_rule_emb = torch.zeros([1, self.rule_emb_size])
-        self.zero_recurrent_emb = torch.zeros([1, self.recurrent_size])
+        self.zero_rule_emb = torch.zeros([1, self.rule_emb_size], device='cuda:2')
+        self.zero_recurrent_emb = torch.zeros([1, self.recurrent_size], device='cuda:2')
         if loss_type == "softmax":
             self.xent_loss = torch.nn.CrossEntropyLoss(reduction='none')
         elif loss_type == "entmax":
@@ -478,13 +478,13 @@ class Text2SQLDecoder(torch.nn.Module):
                 query, desc_enc.schema_memory)
             return question_context + schema_context, schema_attention_logits
 
-    def _tensor(self, data, dtype=None):
+    def _tensor(self, data, dtype=None, device='cpu'):
         """new a tensor"""
-        return torch.tensor(data, dtype=dtype)
+        return torch.tensor(data, dtype=dtype, device=device)
 
     def _index(self, vocab, word):
         """get token id"""
-        return self._tensor([vocab.index(word)])
+        return self._tensor([vocab.index(word)], device='cuda:2')
 
     def _update_state(self, node_type, prev_state, prev_action_emb, parent_h,
                       parent_action_emb, desc_enc):

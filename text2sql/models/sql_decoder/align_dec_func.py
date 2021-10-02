@@ -45,9 +45,9 @@ def compute_align_loss(model, desc_enc, example):
                     root_node, 'value')
             ])))
 
-    rel_cols_t = torch.tensor(sorted(list(set(rel_cols))), dtype=torch.int64)
-    rel_tabs_t = torch.tensor(sorted(list(set(rel_tabs))), dtype=torch.int64)
-    rel_vals_t = torch.tensor(sorted(list(set(rel_vals))), dtype=torch.int64)
+    rel_cols_t = torch.tensor(sorted(list(set(rel_cols))), dtype=torch.int64, device='cuda:2')
+    rel_tabs_t = torch.tensor(sorted(list(set(rel_tabs))), dtype=torch.int64, device='cuda:2')
+    rel_vals_t = torch.tensor(sorted(list(set(rel_vals))), dtype=torch.int64, device='cuda:2')
 
     mc_att_on_rel_col = desc_enc.m2c_align_mat.index_select(1, rel_cols_t)
     mc_max_rel_att = mc_att_on_rel_col.max(axis=0).values

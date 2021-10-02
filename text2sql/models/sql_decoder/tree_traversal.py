@@ -143,7 +143,7 @@ class TreeTraversal:
     def _update_prev_action_emb_apply_rule(cls, self, last_choice,
                                            extra_choice_info):
         """_update_prev_action_emb_apply_rule"""
-        rule_idx = self.model._tensor([last_choice])
+        rule_idx = self.model._tensor([last_choice], device='cuda:2')
         self.prev_action_emb = self.model.rule_embedding(rule_idx)
 
     @classmethod

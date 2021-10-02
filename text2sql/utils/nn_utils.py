@@ -49,7 +49,7 @@ def lstm_init(num_layers, hidden_size, *batch_sizes):
     init_size = batch_sizes + (hidden_size, )
     if num_layers is not None:
         init_size = (num_layers, ) + init_size
-    init = torch.zeros(init_size)
+    init = torch.zeros(init_size, device='cuda:2')
     return (init, init)
 
 
@@ -81,7 +81,8 @@ def batch_gather_2d(var, indices):
                          'but got shape = %s' % (str(indices.shape), ))
 
     batch_size = indices.shape[0]
-    batch_indices_1d = torch.unsqueeze(torch.arange(0, batch_size, dtype=indices.dtype), 1)
+    batch_indices_1d = torch.unsqueeze(torch.arange(0, batch_size, dtype=indices.dtype,
+                                                    device='cuda:2'), 1)
 
     seq_len = indices.shape[1]
     batch_indices = batch_indices_1d.repeat([1, seq_len])

@@ -89,7 +89,7 @@ def train(config):
     max_train_steps = config.train.epochs * (
         len(train_set) // config.general.batch_size // config.train.trainer_num)
 
-    model = ModelClass(config.model, g_label_encoder)
+    model = ModelClass(config.model, g_label_encoder).cuda(device=config.general.device)
     if config.model.init_model_params is not None:
         logging.info("loading model param from %s",
                      config.model.init_model_params)
@@ -166,6 +166,10 @@ def init_env(config):
     handler = logger.handlers[0]
     handler.setLevel(log_level)
     handler.setFormatter(formater)
+    fh = logging.FileHandler('train.log')
+    fh.setLevel(log_level)
+    fh.setFormatter(formater)
+    logger.addHandler(fh)
 
     seed = config.train.random_seed
     if seed is not None:

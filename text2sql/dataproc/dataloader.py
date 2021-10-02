@@ -24,7 +24,7 @@ import torch
 from text2sql.utils import nn_utils
 
 
-def collate_batch_data_v2(origin_batch, config):
+def collate_batch_data_v2(origin_batch, config, device='cpu'):
     """format origin batch data for model forward
     """
     TOKEN_IDS = []
@@ -91,7 +91,7 @@ def collate_batch_data_v2(origin_batch, config):
     for key, value in inputs.items():
         if key in ('orig_inputs', ):
             continue
-        inputs[key] = torch.tensor(value)
+        inputs[key] = torch.tensor(value).to(device=device)
     return (inputs, lst_orig_labels)
 
 
@@ -132,14 +132,14 @@ class DataLoader(object):
             for iid in range_fn(len(self._dataset)):
                 batch.append(self._dataset[iid])
                 if len(batch) == self._batch_size:
-                    outputs = self._collate_fn(batch, self.config.model)
+                    outputs = self._collate_fn(batch, self.config.model, device=self.config.general.device)
                     batch = []
                     if len(outputs[1]) == 0:
                         continue
                     yield outputs
 
             if len(batch) > 0 and not self._drop_last:
-                yield self._collate_fn(batch, self.config.model)
+                yield self._collate_fn(batch, self.config.model, device=self.config.general.device)
 
         return _reader
 

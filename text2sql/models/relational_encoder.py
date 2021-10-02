@@ -83,7 +83,7 @@ class RelationAwareEncoder(nn.Module):
         enc = torch.cat((q_enc, c_enc, t_enc), dim=1)
         # enc = enc.permute([1, 0, 2])
 
-        relations_t = torch.tensor(relations, dtype=torch.int64).unsqueeze(0)
+        relations_t = torch.tensor(relations, dtype=torch.int64, device='cuda:2').unsqueeze(0)
         enc_new, _, _ = self.encoder(enc, relations_t)
 
         # Split updated_enc again

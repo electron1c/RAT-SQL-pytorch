@@ -6,6 +6,7 @@ import json
 import attr
 import torch
 
+import text2sql.utils
 from text2sql.models import encoder
 from text2sql.models.sql_decoder import decoder
 
@@ -37,13 +38,16 @@ class EncDecModel(torch.nn.Module):
             return self._inference(inputs, db)
 
     def _train(self, inputs, labels):
+        # timer = text2sql.utils.Timer()
         enc_results = self.encoder(inputs)
+        # logging.info(f'Encode Time: {timer.interval():.2f}')
         lst_loss = []
         for orig_inputs, label_info, enc_result in zip(inputs['orig_inputs'],
                                                        labels, enc_results):
             loss = self.decoder.compute_loss(orig_inputs, label_info,
                                              enc_result)
             lst_loss.append(loss)
+        # logging.info(f'Decode Time: {timer.interval():.2f}')
 
         return torch.mean(torch.stack(lst_loss, dim=0), dim=0)
 

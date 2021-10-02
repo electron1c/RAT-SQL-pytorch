@@ -46,10 +46,15 @@ def epoch_train(config, model, optimizer, epoch, train_data, is_debug=False):
     timer = utils.Timer()
     batch_id = 1
     for batch_id, (inputs, labels) in enumerate(train_data(), start=1):
+
         optimizer.zero_grad()
         loss = model(inputs, labels)
+        # logging.info(f'Infer Cost: {timer.interval():.2f}')
 
         loss.backward()
+        # logging.info(f'Backward Cost: {timer.interval():.2f}')
+        if config.train.grad_clip != 0:
+            torch.nn.utils.clip_grad_norm_(model.params(), config.train.grad_clip)
         optimizer.step()
         lr_scheduler.step()
         # if type(optimizer._learning_rate) is not float:
@@ -115,7 +120,7 @@ def train(config,
             save_path = os.path.join(config.data.output,
                                      f'epoch{epoch:03d}_acc{best_acc:.4f}',
                                      'model')
-            io.save(model, optimizer, save_path)
+            io.save(model, optimizer[1], save_path)
             log_str += ' got best and saved.'
         else:
             log_str += f' best acc is {best_acc} on epoch {best_epoch}.'

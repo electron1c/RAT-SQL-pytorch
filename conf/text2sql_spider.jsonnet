@@ -2,11 +2,12 @@
 function(data_path='data/CSgSQL/preproc') {
     general: {
         mode: null,
-        batch_size: 16,
+        batch_size: 32,
         use_cuda: true,
         is_cloud: false,
         is_debug: false,
         use_fp16: 0,
+        device: "cuda:2"
     },
     model: {
         pretrain_model_type: 'BERT',
@@ -43,7 +44,7 @@ function(data_path='data/CSgSQL/preproc') {
         log_steps: 10,
         trainer_num: 1,
         # [begin] config for optimizer
-        learning_rate: 1e-05,
+        learning_rate: 3e-05,
         lr_scheduler: "linear_warmup_decay",
         warmup_steps: 0,
         warmup_proportion: 0.1,

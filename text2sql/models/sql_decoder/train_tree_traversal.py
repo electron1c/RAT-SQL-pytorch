@@ -48,7 +48,7 @@ class TrainTreeTraversal(TreeTraversal):
                     valid_logprobs)
             else:
                 # idx shape: batch (=1)
-                idx = outer.model._tensor([idx])
+                idx = outer.model._tensor([idx], device='cuda:2')
                 # loss_piece shape: batch (=1)
                 loss = outer.model.xent_loss(self.logits, idx)
                 return self.weight * loss
